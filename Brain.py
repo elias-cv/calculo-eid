@@ -44,20 +44,14 @@ Para usar esta Calculadora.
 
 1. Escribir el límite en la forma f(x) y el valor al que tiende x (h).
 
-2. ¡¡OJ0!!: Para infinito usar "oo" o "inf", para pi usar "pi" o "π".
+2. Puedes usar los botones interactivos para insertar símbolos matemáticos directamente.
 
-3. Para calcular Limites con raices, valor absoluto o funciones trigonometricas.
-    usar la sintaxis de sympy:
-
-     RAIZ(√(x)) = sympy (sqrt(x))
-
-     VALOR ABSOLUTO(|x|) = sympy (Abs(x))
-
-     SENO(sen(x)) = sympy (sin(x))
-
-     COSENO(cos(x)) = sympy (cos(x))
-
-     TANGENTE(tan(x)) = sympy (tan(x))
+3. Símbolos soportados:
+     RAIZ: √(x)
+     VALOR ABSOLUTO: |x|
+     PI: π
+     INFINITO: ∞ o -∞
+     FUNCIONES: sen(x), cos(x), tan(x)
 """
         caja = ctk.CTkTextbox(self.tab_portada, width=800, height=350, font=("Arial", 12))
         caja.pack(pady=20)
@@ -70,6 +64,14 @@ Para usar esta Calculadora.
         canvas = FigureCanvasTkAgg(figura, master=frame)
         canvas.get_tk_widget().pack(fill="both", expand=True)
         return figura, eje, canvas
+
+    def insertar_en_funcion(self, texto):
+        posicion_cursor = self.f_x.index(ctk.INSERT)
+        self.f_x.insert(posicion_cursor, texto)
+
+    def insertar_en_h(self, texto):
+        posicion_cursor = self.tiende_h.index(ctk.INSERT)
+        self.tiende_h.insert(posicion_cursor, texto)
 
     def crear_calculadora_limites(self):
         contenedor = ctk.CTkFrame(self.tab_Calculadora_limites)
@@ -88,9 +90,56 @@ Para usar esta Calculadora.
         self.f_x = ctk.CTkEntry(panel, placeholder_text="Ej: (x**2-1)/(x-1)", width=250)
         self.f_x.pack(pady=5)
 
-        ctk.CTkLabel(panel, text="Valor h (tiende a):").pack()
-        self.tiende_h = ctk.CTkEntry(panel, placeholder_text="Ej: 1, pi o oo", width=250)
+        teclado_frame = ctk.CTkFrame(panel, fg_color="transparent")
+        teclado_frame.pack(pady=5)
+
+        botones_herramientas = [
+            ("√", "√("),
+            ("|x|", "|"),
+            ("π", "π"),
+            ("∞", "∞"),
+            ("sen", "sen("),
+            ("cos", "cos(")
+        ]
+
+        fila = 0
+        columna = 0
+        for texto_visual, texto_a_insertar in botones_herramientas:
+            btn = ctk.CTkButton(
+                teclado_frame, 
+                text=texto_visual, 
+                width=50, 
+                height=30,
+                font=("Arial", 14, "bold"),
+                command=lambda t=texto_a_insertar: self.insertar_en_funcion(t)
+            )
+            btn.grid(row=fila, column=columna, padx=3, pady=3)
+            
+            columna += 1
+            if columna > 2:
+                columna = 0
+                fila += 1
+
+        ctk.CTkLabel(panel, text="Valor h (tiende a):").pack(pady=(10,0))
+        self.tiende_h = ctk.CTkEntry(panel, placeholder_text="Ej: 1, π o ∞", width=250)
         self.tiende_h.pack(pady=5)
+
+        teclado_h_frame = ctk.CTkFrame(panel, fg_color="transparent")
+        teclado_h_frame.pack(pady=2)
+
+        botones_h = [("∞", "∞"), ("-∞", "-∞"), ("π", "π")]
+        col_h = 0
+        for texto_visual, texto_a_insertar in botones_h:
+            btn_h = ctk.CTkButton(
+                teclado_h_frame, 
+                text=texto_visual, 
+                width=40, 
+                height=25,
+                font=("Arial", 12, "bold"),
+                command=lambda t=texto_a_insertar: self.insertar_en_h(t)
+            )
+            btn_h.grid(row=0, column=col_h, padx=3, pady=3)
+            col_h += 1
 
         ctk.CTkButton(panel, text="Calcular y Graficar", command=self.ejecutar_calculo).pack(pady=20)
 
@@ -112,12 +161,20 @@ Para usar esta Calculadora.
         
         try:
             x = sp.Symbol('x')
+            
+            enunciado_f = enunciado_f.replace("π", "pi")
+            enunciado_f = enunciado_f.replace("∞", "oo")
+            enunciado_f = enunciado_f.replace("√", "sqrt")
+            enunciado_f = enunciado_f.replace("sen", "sin")
+            enunciado_f = enunciado_f.replace("cos", "cos")
+            enunciado_f = re.sub(r'\|([^|]+)\|', r'Abs(\1)', enunciado_f)
+            
             f = sp.sympify(enunciado_f)
             
             # Procesar h
             h_str = valor_h_str.lower().strip()
-            if h_str in ["oo", "inf"]: h = sp.oo
-            elif h_str in ["-oo", "-inf"]: h = -sp.oo
+            if h_str in ["oo", "inf", "∞"]: h = sp.oo
+            elif h_str in ["-oo", "-inf", "-∞"]: h = -sp.oo
             else: h = sp.sympify(h_str.replace("π", "pi"))
 
             pasos, res_final = self.calcular_limites_logica(f, h, x)
