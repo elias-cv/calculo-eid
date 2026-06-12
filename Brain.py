@@ -2,6 +2,7 @@ import customtkinter as ctk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import sympy as sp
+import re
 
 class CalculadoraLimites(ctk.CTk):
     def __init__(self):
