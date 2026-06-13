@@ -247,7 +247,7 @@ Para usar esta Calculadora.
             if res.is_finite and not res.has(sp.nan):# Si el resultado es un número válido (no indeterminado)
                 pasos.append(f"Paso {len(pasos)}: Evaluación directa exitosa.\nResultado = {res}")
                 return "".join(pasos), res
-        except: pass #REVISAR
+        except: pass
 
         # 3. Simplificación algebraica 
         f_can = sp.cancel(f) # SymPy simplifica la fracción
