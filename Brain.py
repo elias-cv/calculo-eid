@@ -194,6 +194,7 @@ Para usar esta Calculadora.
     def calcular_limites_logica(self, f, h, x):
         """Lógica paso a paso sin usar sympy.limit() directo."""
         pasos = [f"--- ANÁLISIS DE LÍMITE ---\nx tiende a: {h}\n"]
+        count = 0
         
         # 1. Valor Absoluto
         if f.has(sp.Abs) and h.is_finite:
@@ -207,21 +208,24 @@ Para usar esta Calculadora.
         try:
             res = f.subs(x, h)
             if res.is_finite and not res.has(sp.nan):
-                pasos.append(f"Paso 1: Evaluación directa exitosa.\nResultado = {res}")
+                count += 1
+                pasos.append(f"Paso {count}: Evaluación directa exitosa.\nResultado = {res}")
                 return "".join(pasos), res
         except: pass
 
         # 3. Simplificación
         f_can = sp.cancel(f)
         if f_can != f:
-            pasos.append(f"Paso 2: Simplificación detectada.\nNueva f(x): {f_can}\n")
+            count += 1
+            pasos.append(f"Paso {count}: Simplificación detectada.\nNueva f(x): {f_can}\n")
             res = f_can.subs(x, h)
             if res.is_finite: return "".join(pasos) + f"Resultado = {res}", res
 
 # --- NUEVA ESTRATEGIA: CONVERGENCIA NUMÉRICA (TABLA DE VALORES) ---
         # Reemplazamos L'Hôpital por la técnica de la Guía 6: acercarse a h
         if not res.is_finite or res.has(sp.nan):
-            pasos.append("Paso 3: Indeterminación detectada. Aplicando Método de Aproximación Numérica (Tabla de Valores)...\n")
+            count +=1
+            pasos.append(f"Paso {count}: Indeterminación detectada. Aplicando Método de Aproximación Numérica (Tabla de Valores)...\n")
             
             # Solo si h es un número finito
             if h.is_finite:
